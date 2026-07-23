@@ -1,6 +1,8 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
+import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { jwtUtils } from "./utils/jwt";
 
 const AUTH_ROUTES = ["/login", "/register"];
 // const PUBLIC_ROUTES = ["/", "/news","/login", "/register"];
@@ -11,17 +13,22 @@ const PUBLIC_ROUTES = ["/", "/news"];
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // const cookieStore = await cookies();
+  const cookieStore = await cookies();
   // const accessToken = cookieStore.get("accessToken")?.value;
 
   const accessToken = request.cookies.get("accessToken")?.value;
   const decodedToken = accessToken
-    ? (jwt.decode(accessToken) as JwtPayload)
+    ? await jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET!)
     : null;
 
   let userRole = null;
-  if (decodedToken) {
-    userRole = decodedToken?.role;
+  if (!decodedToken?.success) {
+    //token has expired or is invalid, redirect to login page
+    cookieStore.delete("accessToken");
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  if (decodedToken?.success && decodedToken.data) {
+    userRole = (decodedToken.data as JwtPayload)?.role;
   }
 
   if (accessToken && AUTH_ROUTES.includes(pathname)) {
@@ -50,14 +57,14 @@ export async function proxy(request: NextRequest) {
 
   //authorized user trying to access a route that is not allowed for their role, redirect to home page
   if (pathname.startsWith("/dashboard") && userRole !== "USER") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/not-found", request.url));
   } else if (pathname.startsWith("/admin-dashboard") && userRole !== "ADMIN") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/not-found", request.url));
   } else if (
     pathname.startsWith("/author-dashboard") &&
     userRole !== "AUTHOR"
   ) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/not-found", request.url));
   }
 
   // return NextResponse.redirect(new URL("/", request.url));
