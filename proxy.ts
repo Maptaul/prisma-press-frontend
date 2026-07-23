@@ -47,6 +47,19 @@ export async function proxy(request: NextRequest) {
   if (!accessToken && !isPublic && !isAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
+
+  //authorized user trying to access a route that is not allowed for their role, redirect to home page
+  if (pathname.startsWith("/dashboard") && userRole !== "USER") {
+    return NextResponse.redirect(new URL("/", request.url));
+  } else if (pathname.startsWith("/admin-dashboard") && userRole !== "ADMIN") {
+    return NextResponse.redirect(new URL("/", request.url));
+  } else if (
+    pathname.startsWith("/author-dashboard") &&
+    userRole !== "AUTHOR"
+  ) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // return NextResponse.redirect(new URL("/", request.url));
   return NextResponse.next();
 }
