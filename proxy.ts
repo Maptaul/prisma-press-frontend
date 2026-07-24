@@ -2,6 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getNewAccessToken } from "./service/refreshToken";
 import { jwtUtils } from "./utils/jwt";
 
 const AUTH_ROUTES = ["/login", "/register"];
@@ -16,19 +17,47 @@ export async function proxy(request: NextRequest) {
   const cookieStore = await cookies();
   // const accessToken = cookieStore.get("accessToken")?.value;
 
-  const accessToken = request.cookies.get("accessToken")?.value;
-  const decodedToken = accessToken
+  let accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+
+  let decodedAccessToken = accessToken
     ? await jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET!)
     : null;
 
+  const decodedRefreshToken = refreshToken
+    ? await jwtUtils.verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET!)
+    : null;
+  // console.log("Access token expired, trying to refresh...");
+
+  if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
+    // console.log("Refreshing access token...");
+    const result = await getNewAccessToken();
+    // console.log(result);
+    if (result.success) {
+      const newAccessToken = result.data.accessToken;
+      cookieStore.set("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24, // 1 day
+        sameSite: "lax",
+      });
+
+      accessToken = newAccessToken;
+      decodedAccessToken = jwtUtils.verifyToken(
+        accessToken!,
+        process.env.JWT_ACCESS_SECRET as string,
+      );
+    }
+  }
+
   let userRole = null;
-  if (!decodedToken?.success) {
+  if (!decodedAccessToken?.success) {
     //token has expired or is invalid, redirect to login page
     cookieStore.delete("accessToken");
-    return NextResponse.redirect(new URL("/login", request.url));
+    // return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (decodedToken?.success && decodedToken.data) {
-    userRole = (decodedToken.data as JwtPayload)?.role;
+  if (decodedAccessToken?.success && decodedAccessToken.data) {
+    userRole = (decodedAccessToken.data as JwtPayload)?.role;
   }
 
   if (accessToken && AUTH_ROUTES.includes(pathname)) {
