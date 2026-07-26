@@ -14,11 +14,7 @@ export const getPremiumNews = async () => {
     headers: {
       cookie: `accessToken=${accessToken}`,
     },
-    cache: "force-cache",
-    next: {
-      revalidate: 60 * 60 * 6, // Revalidate every 60 seconds
-      tags: ["premium-posts"],
-    },
+    cache: "no-store",
   });
   const result = await res.json();
   return result;
