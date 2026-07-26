@@ -2,6 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getSubscriptionStatus } from "./app/(publicGroup)/_actions/getSubscriptionStatus";
 import { getNewAccessToken } from "./service/refreshToken";
 import { jwtUtils } from "./utils/jwt";
 
@@ -95,6 +96,36 @@ export async function proxy(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL("/not-found", request.url));
   }
+
+  // const subscriptionStatus = await getSubscriptionStatus();
+
+  // const isActive = Boolean(
+  //   subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
+  // );
+
+  if (pathname === "/premium") {
+    const subscriptionStatus = await getSubscriptionStatus();
+
+    const isActive = Boolean(
+      subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
+    );
+
+    if (!isActive) {
+      return NextResponse.redirect(new URL("/payment", request.url));
+    }
+  }
+
+  // if (pathname === "/payment") {
+  //   // const subscriptionStatus = await getSubscriptionStatus();
+
+  //   // const isActive = Boolean(
+  //   //   subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
+  //   // );
+
+  //   if (isActive) {
+  //     return NextResponse.redirect(new URL("/payment", request.url));
+  //   }
+  // }
 
   // return NextResponse.redirect(new URL("/", request.url));
   return NextResponse.next();
