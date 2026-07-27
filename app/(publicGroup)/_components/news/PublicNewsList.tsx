@@ -1,7 +1,13 @@
 import { NewsCard } from "@/app/(publicGroup)/_components/news/NewsCard";
-import { NewsSearchParams } from "@/lib/newsQuery";
+import {
+  hasActiveNewsFilters,
+  NewsMeta,
+  NewsSearchParams,
+  parseNewsFilters,
+} from "@/lib/newsQuery";
 import { IPost } from "@/lib/types";
 import { getPublicNews } from "../../_actions/getPublicNews";
+import { NewsPagination } from "./NewsPagination";
 
 export async function PublicNewsList({
   searchParams,
@@ -11,31 +17,19 @@ export async function PublicNewsList({
   const search = await searchParams;
   const result = await getPublicNews({ search });
 
-  // const result = {
-  //   success: true,
-  //   data: [
-  //     {
-  //       id: "1",
-  //       title: "Public News 1",
-  //       content: "This is the content of public news 1.",
-  //       thumbnail: "https://via.placeholder.com/150",
-  //       isFeatured: true,
-  //       status: "PUBLISHED",
-  //       tags: ["tag1", "tag2"],
-  //       views: 100,
-  //       isPremium: false,
-  //       authorId: "1",
-  //       createdAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     }
-  //   ]
-  // };
-
   if (!result.success || !result.data?.length) {
+    const isFiltered = hasActiveNewsFilters(parseNewsFilters(search));
+
     return (
-      <p className="py-12 text-center text-muted-foreground">No news found.</p>
+      <p className="py-12 text-center text-muted-foreground">
+        {isFiltered
+          ? "No news matched your filters."
+          : "No news found."}
+      </p>
     );
   }
+
+  const meta: NewsMeta | undefined = result.meta;
 
   return (
     <div className="space-y-8">
@@ -44,6 +38,8 @@ export async function PublicNewsList({
           <NewsCard key={post.id} post={post} />
         ))}
       </div>
+
+      {meta && <NewsPagination meta={meta} />}
     </div>
   );
 }
