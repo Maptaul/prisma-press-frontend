@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { NewsSearchBar } from "../_components/news/NewsSearchBar";
 import { NewsSkeleton } from "../_components/news/NewsSkeleton";
 import { PublicNewsList } from "../_components/news/PublicNewsList";
 
@@ -12,8 +13,8 @@ const NewsPage = () => {
             Browse the latest published stories.
           </p>
         </div>
+        <NewsSearchBar />
       </div>
-
       <Suspense fallback={<NewsSkeleton />}>
         <PublicNewsList />
       </Suspense>
