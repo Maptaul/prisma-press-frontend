@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { getSubscriptionStatus } from "../../_actions/getSubscriptionStatus";
 import { SubscribeButton } from "./SubscribeButton";
 
-export async function PricingSection() {
+export async function PricingSection({}) {
   const statusResult = await getSubscriptionStatus();
 
   const isActive = Boolean(

@@ -2,7 +2,12 @@
 
 import { cookies } from "next/headers";
 
-export const getPremiumNews = async () => {
+export const getPremiumNews = async ({
+  search,
+}: {
+  search?: { [key: string]: string | string[] | undefined };
+}) => {
+  const searchTerm = `${search?.searchTerm ? `?searchTerm=${search.searchTerm}` : ""}`;
   const cookiesStore = await cookies();
   const accessToken = cookiesStore.get("accessToken")?.value;
   if (!accessToken) {
@@ -12,12 +17,15 @@ export const getPremiumNews = async () => {
       message: "user not logged in",
     };
   }
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/premium`, {
-    headers: {
-      cookie: `accessToken=${accessToken}`,
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/premium${searchTerm}`,
+    {
+      headers: {
+        cookie: `accessToken=${accessToken}`,
+      },
+      cache: "no-store",
     },
-    cache: "no-store",
-  });
+  );
   const result = await res.json();
   return result;
 };

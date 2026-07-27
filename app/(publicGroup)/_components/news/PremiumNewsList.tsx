@@ -2,28 +2,14 @@ import { NewsCard } from "@/app/(publicGroup)/_components/news/NewsCard";
 import { IPost } from "@/lib/types";
 import { getPremiumNews } from "../../_actions/getPremiumNews";
 
-export async function PremiumNewsList() {
-  // const result = {
-  //   success: true,
-  //   data: [
-  //     {
-  //       id: "1",
-  //       title: "Premium News 1",
-  //       content: "This is a premium news article.",
-  //       thumbnail: "/images/news1.jpg",
-  //       isFeatured: true,
-  //       status: "DRAFT",
-  //       tags: ["tag", "tag2"],
-  //       views: 100,
-  //       isPremium: true,
-  //       authorId: "1",
-  //       createdAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     },
-  //   ],
-  // };
+export async function PremiumNewsList({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const search = await searchParams;
 
-  const result = await getPremiumNews();
+  const result = await getPremiumNews({ search });
 
   if (!result.success || !result.data?.length) {
     return (
