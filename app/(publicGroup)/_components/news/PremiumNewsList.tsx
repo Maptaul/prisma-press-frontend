@@ -1,14 +1,14 @@
 import { NewsCard } from "@/app/(publicGroup)/_components/news/NewsCard";
+import { NewsSearchParams } from "@/lib/newsQuery";
 import { IPost } from "@/lib/types";
 import { getPremiumNews } from "../../_actions/getPremiumNews";
 
 export async function PremiumNewsList({
   searchParams,
 }: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams?: Promise<NewsSearchParams>;
 }) {
   const search = await searchParams;
-
   const result = await getPremiumNews({ search });
 
   if (!result.success || !result.data?.length) {

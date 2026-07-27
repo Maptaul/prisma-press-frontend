@@ -1,10 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NewsCard } from "@/app/(publicGroup)/_components/news/NewsCard";
+import { NewsSearchParams } from "@/lib/newsQuery";
 import { IPost } from "@/lib/types";
 import { getPublicNews } from "../../_actions/getPublicNews";
 
-export async function PublicNewsList() {
-  const result = await getPublicNews();
+export async function PublicNewsList({
+  searchParams,
+}: {
+  searchParams?: Promise<NewsSearchParams>;
+}) {
+  const search = await searchParams;
+  const result = await getPublicNews({ search });
 
   // const result = {
   //   success: true,
@@ -35,7 +40,7 @@ export async function PublicNewsList() {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {result.data.map((post: IPost | any) => (
+        {result.data.map((post: IPost) => (
           <NewsCard key={post.id} post={post} />
         ))}
       </div>

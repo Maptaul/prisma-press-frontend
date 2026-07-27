@@ -1,9 +1,20 @@
 "use server";
 
-export const getPublicNews = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
-    cache: "no-store",
-  });
+import { buildNewsQuery, NewsSearchParams } from "@/lib/newsQuery";
+
+export const getPublicNews = async ({
+  search,
+}: {
+  search?: NewsSearchParams;
+} = {}) => {
+  const query = buildNewsQuery(search);
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/posts${query ? `?${query}` : ""}`,
+    {
+      cache: "no-store",
+    },
+  );
   const result = await res.json();
 
   if (!result.success) {

@@ -1,24 +1,26 @@
 "use server";
 
+import { buildNewsQuery, NewsSearchParams } from "@/lib/newsQuery";
 import { cookies } from "next/headers";
 
 export const getPremiumNews = async ({
   search,
 }: {
-  search?: { [key: string]: string | string[] | undefined };
-}) => {
-  const searchTerm = `${search?.searchTerm ? `?searchTerm=${search.searchTerm}` : ""}`;
+  search?: NewsSearchParams;
+} = {}) => {
   const cookiesStore = await cookies();
   const accessToken = cookiesStore.get("accessToken")?.value;
   if (!accessToken) {
-    // throw new Error("Access token not found");
     return {
       success: false,
       message: "user not logged in",
     };
   }
+
+  const query = buildNewsQuery(search);
+
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/premium${searchTerm}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/premium${query ? `?${query}` : ""}`,
     {
       headers: {
         cookie: `accessToken=${accessToken}`,
