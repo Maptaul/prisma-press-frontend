@@ -1,9 +1,61 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
+import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 
-export const createPost = async () =>{
-  
-}
+export type PostState = {
+  success: boolean;
+  message: string;
+  statusCode?: number;
+  data?: Record<string, any>;
+};
+export const createPost = async (
+  prevState: PostState | null,
+  formData: FormData,
+): Promise<PostState> => {
+  const payload = {
+    title: formData.get("title"),
+    content: formData.get("content"),
+    thumbnail: formData.get("thumbnail"),
+    tags: (formData.get("tags") as string).split(", "),
+    isPremium: formData.get("isPremium") === "on",
+  };
+
+  const cookiesStore = await cookies();
+  const accessToken = cookiesStore.get("accessToken")?.value;
+  if (!accessToken) {
+    // throw new Error("Access token not found");
+    return {
+      success: false,
+      message: "user not logged in",
+    };
+  }
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
+    method: "POST",
+    headers: {
+      cookie: `accessToken=${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const result = await res.json();
+  if (result.success) {
+    revalidateTag("my-posts", {
+      expire: 0,
+    });
+    if (result.data?.isPremium) {
+      revalidateTag("premium-posts", {
+        expire: 0,
+      });
+    }
+  } else {
+    revalidateTag("public-posts", {
+      expire: 0,
+    });
+  }
+
+  return result;
+};
 export const getMyPosts = async () => {
   const cookiesStore = await cookies();
   const accessToken = cookiesStore.get("accessToken")?.value;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { IPost } from "@/lib/types";
 import { PencilIcon, PlusIcon } from "lucide-react";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { createPost, type PostState } from "../_actions/myPostAction";
 
 type PostFormDialogProps = {
     mode: "create" | "edit";
@@ -21,10 +21,10 @@ export function PostFormDialog({ mode, post }: PostFormDialogProps) {
     const [open, setOpen] = useState(false);
 
     const action = mode === "edit" && post
-        ? () =>{}
-        : () => {};
+        ? createPost // Replace with the actual updatePost function when implemented
+        : createPost;
 
-    const [state, formAction, pending] = useActionState(action, null) as any;
+    const [state, formAction, pending] = useActionState<PostState | null, FormData>(action, null);
 
     useEffect(() => {
         if (!state) return;
