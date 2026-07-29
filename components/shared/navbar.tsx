@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NavbarProps } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { logout } from "@/service/logout";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,45 +39,44 @@ const navLinks = [
 
 // User dropdown options kept in an array as well
 const userMenuItems = [
-  { label: "Profile", href: "/profile", icon: User },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Billing", href: "/billing", icon: CreditCard },
-  { label: "Settings", href: "/settings", icon: Settings },
+  {
+    label: "Dashboard",
+    action: "dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  { label: "Profile", action: "profile", href: "/profile", icon: User },
+  { label: "Billing", action: "billing", href: "/billing", icon: CreditCard },
+  {
+    label: "Settings",
+    action: "settings",
+    href: "/settings",
+    icon: Settings,
+  },
 ];
-type IUser = {
-  success: boolean;
-  message: string;
-  data: {
-    profile: {
-      id: string;
-      name: string;
-      email: string;
-      activeStatus: string;
-      role: string;
-      createdAt: string;
-      updatedAt: string;
-      profile: {
-        id: string;
-        profilePhoto: string;
-        bio: string | null;
-        userId: string;
-        createdAt: string;
-        updatedAt: string;
-      };
-    };
-  };
-};
-
-type NavbarProps = {
-  user: IUser;
-};
 
 export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
 
   const router = useRouter();
 
+  const getDashboardPath = () => {
+    if (user.data?.profile?.role === "AUTHOR") {
+      return "/author-dashboard";
+    }
+
+    if (user.data?.profile?.role === "ADMIN") {
+      return "/admin-dashboard";
+    }
+
+    return "/dashboard";
+  };
+
   const handleUserMenuAction = async (action: string) => {
+    if (action === "dashboard") {
+      router.push(getDashboardPath());
+      return;
+    }
     if (action === "logout") {
       await logout();
       toast.success("You have been logged out successfully.");
@@ -145,12 +145,28 @@ export function Navbar({ user }: NavbarProps) {
                 <DropdownMenuGroup>
                   {userMenuItems.map((item) => {
                     const Icon = item.icon;
+                    const isDashboardAction = item.action === "dashboard";
+
                     return (
-                      <DropdownMenuItem key={item.href} asChild>
-                        <Link href={item.href} className="cursor-pointer">
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
-                        </Link>
+                      <DropdownMenuItem
+                        key={item.action}
+                        asChild={!isDashboardAction}
+                      >
+                        {isDashboardAction ? (
+                          <button
+                            type="button"
+                            onClick={() => handleUserMenuAction(item.action)}
+                            className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none"
+                          >
+                            <Icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                          </button>
+                        ) : (
+                          <Link href={item.href} className="cursor-pointer">
+                            <Icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                          </Link>
+                        )}
                       </DropdownMenuItem>
                     );
                   })}
