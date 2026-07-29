@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -124,8 +124,9 @@ export function Navbar({ user }: NavbarProps) {
                   className="relative h-9 w-9 rounded-full"
                 >
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="/diverse-avatars.png" alt="User avatar" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>
+                      {user.data?.profile?.name?.charAt(0).toUpperCase() ?? "U"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
