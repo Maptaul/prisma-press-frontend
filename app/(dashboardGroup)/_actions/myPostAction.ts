@@ -107,6 +107,45 @@ export const updatePost = async (
 
   return result;
 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- prevState is required positionally by useActionState
+export const deletePost = async (postId: string, prevState: PostState) => {
+  const cookiesStore = await cookies();
+  const accessToken = cookiesStore.get("accessToken")?.value;
+  if (!accessToken) {
+    // throw new Error("Access token not found");
+    return {
+      success: false,
+      message: "user not logged in",
+    };
+  }
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`,
+    {
+      method: "DELETE",
+      headers: {
+        cookie: `accessToken=${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+  const result = await res.json();
+  if (result.success) {
+    revalidateTag("my-posts", {
+      expire: 0,
+    });
+    if (result.data?.isPremium) {
+      revalidateTag("premium-posts", {
+        expire: 0,
+      });
+    }
+  } else {
+    revalidateTag("public-posts", {
+      expire: 0,
+    });
+  }
+
+  return result;
+};
 export const getMyPosts = async () => {
   const cookiesStore = await cookies();
   const accessToken = cookiesStore.get("accessToken")?.value;

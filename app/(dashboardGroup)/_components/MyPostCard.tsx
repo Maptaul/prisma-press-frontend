@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { IPost } from "@/lib/types";
 import { MessageSquareIcon, SparklesIcon } from "lucide-react";
+import { DeletePostDialog } from "./DeletePostDialog";
 import { PostFormDialog } from "./PostFormDialog";
 
 type MyPostCardProps = {
@@ -30,8 +31,9 @@ export function MyPostCard({ post }: MyPostCardProps) {
           )}
         </div>
         <CardTitle className="text-lg">{post.title}</CardTitle>
-        <CardAction>
+        <CardAction className="flex items-center gap-2">
           <PostFormDialog mode="edit" post={post} />
+          <DeletePostDialog post={post} />
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
