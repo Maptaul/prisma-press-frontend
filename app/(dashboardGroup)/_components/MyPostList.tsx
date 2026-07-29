@@ -1,27 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IPost } from "@/lib/types";
+import { getMyPosts } from "../_actions/myPostAction";
 import { MyPostCard } from "./MyPostCard";
 
 export async function MyPostsList() {
-  const result = {
-    success: true,
-    data: [
-      {
-        id: "1",
-        title: "My Post 1",
-        content: "This is the content of my post 1.",
-        thumbnail: "https://via.placeholder.com/150",
-        isFeatured: true,
-        status: "DRAFT",
-        tags: ["tag1", "tag2"],
-        views: 100,
-        isPremium: false,
-        authorId: "1",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-    ]
-  };
+  // const result = {
+  //   success: true,
+  //   data: [
+  //     {
+  //       id: "1",
+  //       title: "My Post 1",
+  //       content: "This is the content of my post 1.",
+  //       thumbnail: "https://via.placeholder.com/150",
+  //       isFeatured: true,
+  //       status: "DRAFT",
+  //       tags: ["tag1", "tag2"],
+  //       views: 100,
+  //       isPremium: false,
+  //       authorId: "1",
+  //       createdAt: new Date().toISOString(),
+  //       updatedAt: new Date().toISOString(),
+  //     },
+  //   ],
+  // };
+
+  const result = await getMyPosts();
 
   if (!result.success || !result.data?.length) {
     return (
@@ -33,7 +36,7 @@ export async function MyPostsList() {
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {result.data.map((post : IPost | any) => (
+      {result.data.map((post: IPost | any) => (
         <MyPostCard key={post.id} post={post} />
       ))}
     </div>

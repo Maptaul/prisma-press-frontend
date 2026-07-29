@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+
 import { MyPostsList } from "../../_components/MyPostList";
 import { MyPostsSkeleton } from "../../_components/MyPostSkeleton";
 import { PostFormDialog } from "../../_components/PostFormDialog";
