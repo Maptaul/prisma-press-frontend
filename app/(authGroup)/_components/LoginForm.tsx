@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 // import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { loginAction } from "../_actions/authActions";
 
 const LoginForm = () => {
-  const [state, action, pending] = useActionState(loginAction, null);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") ?? "";
+  const [state, action, pending] = useActionState(loginAction.bind(null, redirectTo), null);
   // const router = useRouter();
 
   useEffect(() => {

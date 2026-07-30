@@ -82,7 +82,10 @@ export async function proxy(request: NextRequest) {
   );
   //authenticated user trying to access a public route or auth route, redirect to dashboard based on role
   if (!accessToken && !isPublic && !isAuthRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirectTo", pathname);
+
+    return NextResponse.redirect(loginUrl);
   }
 
   //authorized user trying to access a route that is not allowed for their role, redirect to home page
