@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
+import { isAccessTokeExists } from "@/service/refreshToken";
 import { revalidateTag } from "next/cache";
-import { cookies } from "next/headers";
 
 export type PostState = {
   success: boolean;
@@ -18,15 +18,8 @@ export const createPost = async (prevState: PostState, formData: FormData) => {
     isPremium: formData.get("isPremium") === "on",
   };
 
-  const cookiesStore = await cookies();
-  const accessToken = cookiesStore.get("accessToken")?.value;
-  if (!accessToken) {
-    // throw new Error("Access token not found");
-    return {
-      success: false,
-      message: "user not logged in",
-    };
-  }
+  const accessToken = await isAccessTokeExists();
+
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
     method: "POST",
     headers: {
@@ -69,15 +62,7 @@ export const updatePost = async (
     isPremium: formData.get("isPremium") === "on",
   };
 
-  const cookiesStore = await cookies();
-  const accessToken = cookiesStore.get("accessToken")?.value;
-  if (!accessToken) {
-    // throw new Error("Access token not found");
-    return {
-      success: false,
-      message: "user not logged in",
-    };
-  }
+  const accessToken = await isAccessTokeExists();
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`,
     {
@@ -109,8 +94,7 @@ export const updatePost = async (
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- prevState is required positionally by useActionState
 export const deletePost = async (postId: string, prevState: PostState) => {
-  const cookiesStore = await cookies();
-  const accessToken = cookiesStore.get("accessToken")?.value;
+  const accessToken = await isAccessTokeExists();
   if (!accessToken) {
     // throw new Error("Access token not found");
     return {
@@ -147,8 +131,7 @@ export const deletePost = async (postId: string, prevState: PostState) => {
   return result;
 };
 export const getMyPosts = async () => {
-  const cookiesStore = await cookies();
-  const accessToken = cookiesStore.get("accessToken")?.value;
+  const accessToken = await isAccessTokeExists();
   if (!accessToken) {
     // throw new Error("Access token not found");
     return {
